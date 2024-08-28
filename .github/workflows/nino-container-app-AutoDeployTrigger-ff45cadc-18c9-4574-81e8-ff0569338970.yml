@@ -1,0 +1,43 @@
+name: Trigger auto deployment for nino-container-app
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/nino-container-app-AutoDeployTrigger-ff45cadc-18c9-4574-81e8-ff0569338970.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.NINOCONTAINERAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerapps2.azurecr.io
+          registryUsername: ${{ secrets.NINOCONTAINERAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.NINOCONTAINERAPP_REGISTRY_PASSWORD }}
+          containerAppName: nino-container-app
+          resourceGroup: rg-container-apps-nino
+          imageToBuild: containerapps2.azurecr.io/nino-container-app:${{ github.sha }}
+          
+            
+
+     
+
